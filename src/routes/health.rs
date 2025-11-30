@@ -1,12 +1,10 @@
-use axum::{Json};
-use serde::Serialize;
+use axum::{ Json, http::StatusCode };
 
-#[derive(Serialize)]
 pub struct HealthData {
-    status: String,
+    status: StatusCode,
 }
 
 pub async fn health() -> Json<HealthData> {
-    let health_data = HealthData { status: "ok".into()};
+    let health_data = HealthData { status: StatusCode::OK};
     Json(health_data)
 }
