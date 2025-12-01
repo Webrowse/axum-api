@@ -13,7 +13,8 @@ async fn main() {
         .await
         .expect("Error connecting DB");
 
-    let state = state::AppState { db };
+    let state = state::AppState{db};
+
     let app = routes::routes().with_state(state);
 
     let listener = tokio::net::TcpListener::bind(config.addr()).await.unwrap();

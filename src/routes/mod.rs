@@ -1,12 +1,18 @@
-use axum::{Router, routing::get};
+use axum::{Router, routing::{ get, post }};
 
 mod health;
-pub use health::health;
+mod auth;
 
-pub fn routes() -> Router {
+pub use health::health;
+pub use auth::register;
+
+use crate::state::AppState;
+
+pub fn routes() -> Router<AppState>{
     Router::new()
         .route("/", get(root))
         .route("/health", get(health))
+        .route("/auth/register", post(register))
 }
 
 async fn root() -> &'static str {
