@@ -68,7 +68,7 @@ sqlx migrate run
 - `/health` route now checks database connectivity  
 
 
-## Day 3 — User Registration Implemented
+## Day 3: User Registration Implemented
 
 Today’s goal: implement a real registration flow using SQLX, Argon2 password hashing, and proper request/response structs.
 
@@ -121,5 +121,71 @@ CREATE TABLE users (
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 ```
+
+## Day 4: Login and JWT Authentication Implemented
+
+## Overview
+Today's work added full user login capability and secure token-based authentication. The backend can now verify user credentials, generate JWT tokens, and protect routes using a custom authentication middleware.
+
+## What Was Implemented
+
+### 1. Login Endpoint
+A `/auth/login` route now:
+- Accepts email and password
+- Fetches the user record from the database
+- Verifies the password using Argon2
+- Generates a signed JWT token valid for 24 hours
+- Returns the token to the client
+
+### 2. JWT Token Generation
+JWT contains:
+- `sub`: user ID
+- `iat`: issued at timestamp
+- `exp`: expiration timestamp (24 hours)
+
+Secret key loaded from environment via `JWT_SECRET`.
+
+### 3. JWT Middleware
+A reusable middleware validates:
+- Authorization header format
+- Token signature
+- Token expiry
+- Extracts user ID and attaches it to request extensions for downstream handlers
+
+This middleware protects any route group using:
+```
+.layer(middleware::from_fn(require_auth))
+```
+
+### 4. Protected Route Example
+Added a sample route:
+- `GET /api/me`
+- Requires a valid JWT
+- Returns the user’s UUID extracted from the token
+
+This confirms that the middleware and token verification pipeline are functioning.
+
+### 5. Environment Requirements
+`.env` must contain:
+```
+JWT_SECRET=your_long_random_secret
+```
+### 6. How to Test
+Register a user:
+```
+POST /auth/register
+```
+Login to receive token:
+```
+POST /auth/login
+```
+Call protected route with the token:
+```
+GET /api/me
+Authorization: Bearer <token>
+```
+
+## Status
+Authentication layer is now complete and stable. System supports secure login, token issuance, and guarded routes.
 
 
