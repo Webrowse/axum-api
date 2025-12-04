@@ -1,8 +1,15 @@
 mod config;
 mod routes;
 mod state;
+mod tasks; // must be at top if using main.rs as crate root
 
 use sqlx::PgPool;
+
+
+use axum::{Router};
+use axum::routing::{post, get, put, delete};
+use crate::tasks::routes as task_routes;
+
 
 #[tokio::main]
 async fn main() {
@@ -18,7 +25,6 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(config.addr()).await.unwrap();
 
-    println!("Server is running on {}", config.addr());
-
     axum::serve(listener, app).await.unwrap();
 }
+

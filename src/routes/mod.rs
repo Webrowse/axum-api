@@ -1,33 +1,43 @@
 use axum::{
     Router,
-    routing::{get, post},
-    middleware,
     extract::Request,
+    middleware,
+    routing::{delete, get, post, put},
 };
 
-mod health;
 mod auth;
+mod health;
 mod middleware_auth;
+mod tasks;
 
-pub use health::health;
+
 pub use auth::register;
+pub use health::health;
 
-use crate::state::AppState;
 use crate::routes::auth::login;
+use crate::state::AppState;
+use crate::tasks::routes as task_routes;
 
+pub fn routes() -> Router<AppState> {
 
-pub fn routes() -> Router<AppState>{
+    let task_router = Router::new()
+    .route("/", post(task_routes::create).get(task_routes::list))
+    .route("/:id", put(task_routes::update).delete(task_routes::delete));
+
     Router::new()
+        .route("/", post(task_routes::create).get(task_routes::list))
+        .route("/:id", put(task_routes::update).delete(task_routes::delete))
         .route("/", get(root))
         .route("/health", get(health))
         .route("/auth/register", post(register))
         .route("/auth/login", post(login))
-        .nest (
-        "/api",
-        Router::new()
-        .route("/me", get(me_handler))
-        .layer(middleware::from_fn(middleware_auth::require_auth))
-    )
+        .nest(
+            "/api",
+            Router::new()
+                .route("/me", get(me_handler))
+                .nest("/task", task_router)
+                .layer(middleware::from_fn(middleware_auth::require_auth)),
+        )
 }
 
 async fn root() -> &'static str {
