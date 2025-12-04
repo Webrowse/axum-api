@@ -2,7 +2,8 @@ use axum::{
     http::StatusCode,
     middleware::Next,
     response::{Response, IntoResponse},
-    extract::Request,
+    extract::{ Request, FromRequestParts},
+    http::request::Parts,
 };
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use std::env;
@@ -11,7 +12,7 @@ use serde::Deserialize;
 
 pub struct JwtUser(pub Uuid);
 
-#[async_trait]
+
 impl<S> FromRequestParts<S> for JwtUser
 where
     S: Send + Sync,

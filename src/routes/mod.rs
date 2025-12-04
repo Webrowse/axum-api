@@ -2,7 +2,7 @@ use axum::{
     Router,
     extract::Request,
     middleware,
-    routing::{get, post, put, delete},
+    routing::{get, post, put},
 };
 
 mod auth;
@@ -21,7 +21,7 @@ pub fn routes() -> Router<AppState> {
 
     let task_router = Router::new()
     .route("/", post(tasks::routes::create).get(tasks::routes::list))
-    .route("/:id", put(tasks::routes::update).delete(tasks::routes::delete));
+    .route("/{id}", put(tasks::routes::update).delete(tasks::routes::delete));
 
     Router::new()
         .route("/", get(root))

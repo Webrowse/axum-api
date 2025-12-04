@@ -46,7 +46,7 @@ pub async fn update_task(pool: &PgPool, user_id: Uuid, id: Uuid, title: Option<S
         UPDATE tasks
         SET
             title = COALESCE($3, title),
-            done = COALESCE(&4, done)
+            done = COALESCE($4, done)
         WHERE id = $2 AND user_id = $1
         RETURNING id, user_id, title, done, created_at
         "#,

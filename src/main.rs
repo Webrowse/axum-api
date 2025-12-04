@@ -19,6 +19,8 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(config.addr()).await.unwrap();
 
+    println!("server is chilling at http://{}", config.addr());
+
     axum::serve(listener, app).await.unwrap();
 }
 
