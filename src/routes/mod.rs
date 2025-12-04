@@ -2,7 +2,7 @@ use axum::{
     Router,
     extract::Request,
     middleware,
-    routing::{delete, get, post, put},
+    routing::{get, post, put, delete},
 };
 
 mod auth;
@@ -16,17 +16,14 @@ pub use health::health;
 
 use crate::routes::auth::login;
 use crate::state::AppState;
-use crate::tasks::routes as task_routes;
 
 pub fn routes() -> Router<AppState> {
 
     let task_router = Router::new()
-    .route("/", post(task_routes::create).get(task_routes::list))
-    .route("/:id", put(task_routes::update).delete(task_routes::delete));
+    .route("/", post(tasks::routes::create).get(tasks::routes::list))
+    .route("/:id", put(tasks::routes::update).delete(tasks::routes::delete));
 
     Router::new()
-        .route("/", post(task_routes::create).get(task_routes::list))
-        .route("/:id", put(task_routes::update).delete(task_routes::delete))
         .route("/", get(root))
         .route("/health", get(health))
         .route("/auth/register", post(register))

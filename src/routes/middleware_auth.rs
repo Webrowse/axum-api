@@ -9,6 +9,24 @@ use std::env;
 use uuid::Uuid;
 use serde::Deserialize;
 
+pub struct JwtUser(pub Uuid);
+
+#[async_trait]
+impl<S> FromRequestParts<S> for JwtUser
+where
+    S: Send + Sync,
+{
+    type Rejection = (StatusCode, &'static str);
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        parts
+            .extensions
+            .get::<Uuid>()
+            .copied()
+            .map(JwtUser)
+            .ok_or((StatusCode::UNAUTHORIZED, "missing user"))
+    }
+}
 
 #[derive(Deserialize)]
 #[allow(dead_code)]

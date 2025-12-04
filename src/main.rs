@@ -1,14 +1,8 @@
 mod config;
 mod routes;
 mod state;
-mod tasks; // must be at top if using main.rs as crate root
 
 use sqlx::PgPool;
-
-
-use axum::{Router};
-use axum::routing::{post, get, put, delete};
-use crate::tasks::routes as task_routes;
 
 
 #[tokio::main]

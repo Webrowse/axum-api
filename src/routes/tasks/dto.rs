@@ -8,5 +8,5 @@ pub struct CreateTask {
 #[derive(Deserialize)]
 pub struct UpdateTask {
     pub title: Option<String>,
-    pub done: Option<String>,
+    pub done: Option<bool>,
 }

@@ -9,5 +9,5 @@ pub struct Task {
     pub user_id: Uuid,
     pub title: String,
     pub done: bool,
-    pub created_by: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
 }

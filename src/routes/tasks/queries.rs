@@ -1,6 +1,8 @@
+
+
 use sqlx::{PgPool, Result};
 use uuid::Uuid;
-use crate::tasks::model::Task;
+use super::model::Task;
 
 pub async fn create_task(pool: &PgPool, user_id: Uuid, title: &str) -> Result<Task> {
     let rec = sqlx::query_as!(
