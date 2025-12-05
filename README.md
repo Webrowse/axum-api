@@ -210,3 +210,18 @@ Authentication layer is now complete and stable. System supports secure login, t
 
 ---
 
+## Day 6: Code Refinement
+
+**Goal:** Clean up code structure and implement better patterns.
+
+### fixes
+
+- Created `JwtUser` custom extractor pattern
+  - Implements `FromRequestParts` trait
+  - Eliminates boilerplate in route handlers
+  - Automatic user ID extraction from JWT
+- Refactored route structure with nested routers
+- Enhanced error handling with specific messages
+- Applied SQLX compile-time query checking
+- Improved overall code organization
+
