@@ -1,227 +1,282 @@
-## Day 1: Basic Server Running
+# Axum API Template
 
-### Goal: Get a minimal Axum server running with one text route and one JSON route.
+> A production-ready REST API template built with Axum, PostgreSQL, and JWT authentication
 
-What I built today
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
 
-Setup Axum project with Tokio runtime.
+## What Is This?
 
-Wrote everything inside main() to stay fast and avoid early abstraction.
+A complete, working REST API starter template that includes everything you need to build a secure, scalable backend:
 
-## Added two routes:
+- ✅ JWT-based authentication
+- ✅ User registration & login
+- ✅ Task management (full CRUD)
+- ✅ PostgreSQL with migrations
+- ✅ Password hashing with Argon2
+- ✅ Type-safe database queries
+- ✅ Middleware-based auth
+- ✅ Docker Compose setup
 
-GET / returns static text.
+**Built over 6 days** as a learning journey (see development log below).
 
-GET /health returns JSON { "status": "ok" }.
+## Quick Start
 
-## Current code entrypoint
+### Prerequisites
 
-Server listens on 127.0.0.1:3000.
+- [Rust](https://www.rust-lang.org/tools/install) 1.75+
+- [Docker](https://docs.docker.com/get-docker/) (easiest way)
+- OR PostgreSQL 16+ installed locally
 
-Using tokio::net::TcpListener and axum::serve.
-
-## Commands
-
+### Get Started in 3 Steps
 ```bash
-cargo run
-curl http://127.0.0.1:3000/
-curl http://127.0.0.1:3000/health
-```
+# 1. Use this template (click "Use this template" on GitHub)
+# OR clone it:
+git clone https://github.com/yourusername/axum-api-template.git
+cd axum-api-template
 
+# 2. Setup environment
+cp .env.example .env
+# Edit .env and change JWT_SECRET to something secure!
 
-
-
-## Day 2: Database Setup (PostgreSQL + SQLX)
-
-**Goal:** Connect Axum API to a real PostgreSQL database and prepare migrations.
-
-### What I did today
-
-- Added `sqlx` with Postgres + UUID features  
-- Installed SQLX CLI  
-- Created a local PostgreSQL instance using Docker Compose  
-- Created a new database: `axum_starter`  
-- Added `.env` with `DATABASE_URL`  
-- Generated the first migration:
-```
-sqlx migrate add create_users
-```
-- Wrote migration for `users` table:
-```
-CREATE TABLE users (
-id UUID PRIMARY KEY,
-email TEXT NOT NULL UNIQUE,
-password_hash TEXT NOT NULL,
-created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-```
-- Applied migrations using:
-```
+# 3. Start database and run migrations
+docker-compose up -d
+cargo install sqlx-cli
 sqlx migrate run
+
+# 4. Run the server
+cargo run
+
+# Server running at http://127.0.0.1:3000
 ```
 
-### Current Status
+## API Endpoints
 
-- PostgreSQL container running  
-- SQLX migrations working  
-- App starts and connects to the DB  
-- `/health` route now checks database connectivity  
+### Public Endpoints
 
-
-## Day 3: User Registration Implemented
-
-Today’s goal: implement a real registration flow using SQLX, Argon2 password hashing, and proper request/response structs.
-
-### Added Features
-
-1. **POST /auth/register** endpoint
-2. **Argon2 password hashing**
-3. **UUID user IDs**
-4. **Insert user into PostgreSQL**
-5. **Structured request + response payloads**
-
-### What Happens When You Register
-
-* Client submits email and raw password
-* Password is hashed using Argon2 + random salt
-* A new UUID is generated
-* User is inserted into the `users` table
-* API returns the new user’s ID and email
-
-### Example Request
-
+#### Register User
 ```bash
 curl -X POST http://127.0.0.1:3000/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"secret123"}'
+  -d '{"email":"test@example.com","password":"password123"}'
 ```
 
-### Example Response
+#### Login
+```bash
+curl -X POST http://127.0.0.1:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
 
-```json
-{
-    "id":"f8f69103-d517-4f66-b144-1ee1276da6eb",
-    "email":"test@example.com"
+# Returns: {"token":"eyJ0eXAiOiJKV1QiLCJhbGc..."}
+```
+
+### Protected Endpoints (Require JWT Token)
+
+#### Create Task
+```bash
+curl -X POST http://127.0.0.1:3000/api/task \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"title":"Buy groceries"}'
+```
+
+#### List Tasks
+```bash
+curl http://127.0.0.1:3000/api/task \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Update Task
+```bash
+curl -X PUT http://127.0.0.1:3000/api/task/TASK_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"done":true}'
+```
+
+#### Delete Task
+```bash
+curl -X DELETE http://127.0.0.1:3000/api/task/TASK_ID \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+##  Project Structure
+
+```md
+axum-api-template/
+├── migrations/           # Database migrations
+│   ├── *_create_users.sql
+│   └── *_create_tasks.sql
+├── src/
+│   ├── config.rs        # Configuration management
+│   ├── state.rs         # Shared app state
+│   ├── routes/
+│   │   ├── mod.rs       # Route definitions
+│   │   ├── auth.rs      # Registration & login
+│   │   ├── health.rs    # Health check endpoint
+│   │   ├── middleware_auth.rs  # JWT validation
+│   │   └── tasks/       # Task management module
+│   │       ├── dto.rs   # Request/response types
+│   │       ├── model.rs # Database models
+│   │       ├── queries.rs # Database operations
+│   │       └── routes.rs  # Task endpoints
+│   └── main.rs          # Application entry point
+├── .env                 # Environment template
+├── docker-compose.yml   # PostgreSQL setup
+└── Cargo.toml
+```
+
+## Key Features Explained
+
+### JWT Authentication
+- Tokens valid for 24 hours
+- Middleware automatically validates tokens
+- Custom `JwtUser` extractor for clean handlers
+
+### Database Design
+- UUID primary keys for distributed systems
+- Foreign key constraints with CASCADE delete
+- Timestamptz for timezone awareness
+- SQLX compile-time query verification
+
+### Security
+- Argon2 password hashing (memory-hard algorithm)
+- Random salt per password
+- No plaintext passwords stored
+- User-scoped data access
+
+### Code Organization
+- Modular route structure
+- Separation of DTOs, models, and queries
+- Custom extractors for reduced boilerplate
+- Type-safe throughout
+
+## Development Journey
+
+This project was built incrementally over 6 days as a learning exercise:
+
+- **Day 1**: Basic Axum server with text and JSON routes
+- **Day 2**: PostgreSQL connection, SQLX setup, first migration
+- **Day 3**: User registration with Argon2 password hashing
+- **Day 4**: JWT login flow and authentication middleware
+- **Day 5**: Task CRUD operations with database persistence
+- **Day 6**: Code refactoring, custom extractors, better patterns
+
+Each day built upon the previous, demonstrating incremental development.
+
+## Customization Guide
+
+### Adding New Protected Routes
+```rust
+// In src/routes/mod.rs
+pub fn routes() -> Router<AppState> {
+    Router::new()
+        // ... existing routes
+        .nest(
+            "/api",
+            Router::new()
+                .route("/your-route", get(your_handler))
+                // Automatically protected by JWT middleware
+                .layer(middleware::from_fn(middleware_auth::require_auth)),
+        )
 }
 ```
 
-### Files Added Today
+### Adding Database Tables
+```bash
+# Create migration
+sqlx migrate add create_your_table
 
-* `src/routes/auth.rs`
-* `argon2` and `rand` dependencies in Cargo.toml
-* new `POST /auth/register` route in `routes/mod.rs`
-
-### DB Schema Used
-
-```sql
-CREATE TABLE users (
-    id UUID PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+# Edit the migration file in migrations/
+# Run migration
+sqlx migrate run
 ```
 
-## Day 4: Login and JWT Authentication Implemented
+### Adding New Features
 
-## Overview
-Today's work added full user login capability and secure token-based authentication. The backend can now verify user credentials, generate JWT tokens, and protect routes using a custom authentication middleware.
+1. Create module in `src/routes/your_feature/`
+2. Add `dto.rs`, `model.rs`, `queries.rs`, `routes.rs`
+3. Register routes in `src/routes/mod.rs`
+4. Follow the existing task module pattern
 
-## What Was Implemented
+## Production Deployment
 
-### 1. Login Endpoint
-A `/auth/login` route now:
-- Accepts email and password
-- Fetches the user record from the database
-- Verifies the password using Argon2
-- Generates a signed JWT token valid for 24 hours
-- Returns the token to the client
+### Environment Variables
 
-### 2. JWT Token Generation
-JWT contains:
-- `sub`: user ID
-- `iat`: issued at timestamp
-- `exp`: expiration timestamp (24 hours)
-
-Secret key loaded from environment via `JWT_SECRET`.
-
-### 3. JWT Middleware
-A reusable middleware validates:
-- Authorization header format
-- Token signature
-- Token expiry
-- Extracts user ID and attaches it to request extensions for downstream handlers
-
-This middleware protects any route group using:
-```
-.layer(middleware::from_fn(require_auth))
+ **Critical**: Change these before deploying!
+```env
+JWT_SECRET=generate_a_strong_random_secret_at_least_32_chars
+DATABASE_URL=postgresql://user:password@prod-host:5432/db
+PORT=3000
 ```
 
-### 4. Protected Route Example
-Added a sample route:
-- `GET /api/me`
-- Requires a valid JWT
-- Returns the user’s UUID extracted from the token
-
-This confirms that the middleware and token verification pipeline are functioning.
-
-### 5. Environment Requirements
-`.env` must contain:
-```
-JWT_SECRET=your_long_random_secret
-```
-### 6. How to Test
-Register a user:
-```
-POST /auth/register
-```
-Login to receive token:
-```
-POST /auth/login
-```
-Call protected route with the token:
-```
-GET /api/me
-Authorization: Bearer <token>
+### Build for Production
+```bash
+cargo build --release
+./target/release/axum-api-template
 ```
 
-## Status
-Authentication layer is now complete and stable. System supports secure login, token issuance, and guarded routes.
+### Docker Deployment
+```dockerfile
+FROM rust:1.75 as builder
+WORKDIR /app
+COPY . .
+RUN cargo build --release
 
-## Day 5: Task Management CRUD
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y libpq5 ca-certificates
+COPY --from=builder /app/target/release/axum-api-template /usr/local/bin/
+CMD ["axum-api-template"]
+```
 
-**Goal:** Implement complete task management system with database persistence.
+## Testing
+```bash
+# Run tests
+cargo test
 
-### What I Built
+# Check code
+cargo clippy
 
-- Created `tasks` table with foreign key to users (CASCADE delete)
-- Organized task code into modular structure: dto, model, queries, routes
-- Implemented full CRUD operations:
-  - `POST /api/task` - create task
-  - `GET /api/task` - list all user tasks
-  - `PUT /api/task/{id}` - update task (partial updates with COALESCE)
-  - `DELETE /api/task/{id}` - delete task
-- All routes protected by JWT middleware
-- User-scoped operations (users only access their own tasks)
+# Format code
+cargo fmt
+```
 
-### Files Added
-- `migrations/20251130132950_create_tasks.sql`
-- `src/routes/tasks/` module (dto, model, queries, routes)
+## Contributing
+
+This is a learning project and template. Feel free to:
+- Fork it and make it your own
+- Submit PRs for improvements
+- Open issues for bugs or suggestions
+- Use it in your projects
+
+## License
+
+MIT License - see LICENSE file
+
+## Acknowledgments
+
+Built with these amazing Rust crates:
+- [Axum](https://github.com/tokio-rs/axum) - Web framework
+- [SQLX](https://github.com/launchbadge/sqlx) - SQL toolkit
+- [Tokio](https://tokio.rs/) - Async runtime
+- [Argon2](https://github.com/RustCrypto/password-hashes) - Password hashing
+- [jsonwebtoken](https://github.com/Keats/jsonwebtoken) - JWT handling
+
+## What's Next?
+
+Consider adding:
+- [ ] Email verification
+- [ ] Password reset flow
+- [ ] Rate limiting
+- [ ] API documentation (Swagger/OpenAPI)
+- [ ] Logging with tracing
+- [ ] Tests (unit & integration)
+- [ ] CI/CD pipeline
+- [ ] Refresh tokens
+- [ ] Role-based access control
 
 ---
 
-## Day 6: Code Refinement
+**Star this repo** if it helped you! ⭐
 
-**Goal:** Clean up code structure and implement better patterns.
-
-### fixes
-
-- Created `JwtUser` custom extractor pattern
-  - Implements `FromRequestParts` trait
-  - Eliminates boilerplate in route handlers
-  - Automatic user ID extraction from JWT
-- Refactored route structure with nested routers
-- Enhanced error handling with specific messages
-- Applied SQLX compile-time query checking
-- Improved overall code organization
-
+Built by Adarsh | [X (Twitter)](https://x.com/Adarsh_web3)

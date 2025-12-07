@@ -84,7 +84,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "axum-api"
+name = "axum-api-template"
 version = "0.1.0"
 dependencies = [
  "argon2",

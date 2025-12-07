@@ -1,3 +1,29 @@
+# Rust
 /target
+**/*.rs.bk
+*.pdb
+
+# Environment
 .env
-pgdata/*
+.env.local
+.env.*.local
+
+# Database
+pgdata/
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SQLX
+.sqlx/
